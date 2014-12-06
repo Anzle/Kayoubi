@@ -168,6 +168,13 @@ public class PeerManager {
 		peerList.remove(p);
 	}
 	
+	/**
+	 * retrieve the list of current peers
+	 */
+	public synchronized ArrayList<Peer> getPeers(){
+		return this.peerList;
+	}
+	
 	/***
 	 * 
 	 * Private classes that act as threads
@@ -212,7 +219,8 @@ public class PeerManager {
 					}
 
 					//for Phase 2, we only connect to these peers
-					else if(p.ip.equals("128.6.171.130") || p.ip.equals("128.6.171.131")){
+					//else if(p.ip.equals("128.6.171.130") || p.ip.equals("128.6.171.131")){
+					else{
 						if(p.connect()){
 							System.out.println("Downloading Connection from: " + p.ip);
 							add(p); //This is a synchronized method

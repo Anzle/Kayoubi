@@ -44,7 +44,7 @@ public class Piece {
 		return this.index;
 	}
 	
-	public byte[] getData(){
+	public synchronized byte[] getData(){
 		byte[] data = new byte[length];
 		for(Integer offset : this.blocks.keySet()){
 			Block b = this.blocks.get(offset);
@@ -58,7 +58,7 @@ public class Piece {
 		return data;
 	}
 	
-	public int bytesCompleted(){
+	public synchronized int bytesCompleted(){
 		int num = 0;
 		for(Integer k : this.blocks.keySet()){
 			Block b = this.blocks.get(k);
@@ -70,7 +70,7 @@ public class Piece {
 		
 	}
 	
-	public byte[] getBlock(int offset, int length){
+	public synchronized byte[] getBlock(int offset, int length){
 		if(!this.completed)
 			return null;
 		if(offset + length > this.length)
@@ -93,7 +93,7 @@ public class Piece {
 		return completed;
 	}
 	
-	public boolean isValid(){
+	public synchronized boolean isValid(){
 		try {
 			MessageDigest hasher = MessageDigest.getInstance("SHA");
 			byte[] result = hasher.digest(this.getData());
@@ -116,7 +116,7 @@ public class Piece {
 		return true;
 	}
 	
-	public void saveBlock(Block b) {
+	public synchronized void saveBlock(Block b) {
 		if(b.getIndex() != this.index)
 			return;
 		if(completed)
@@ -125,7 +125,7 @@ public class Piece {
 		this.checkCompleted();
 	}
 	
-	private void checkCompleted(){
+	private synchronized void checkCompleted(){
 		for(int i = 0; i < this.blockOffsets.length; i++){
 			if(!blocks.containsKey(this.blockOffsets[i])){
 				return;
@@ -147,7 +147,7 @@ public class Piece {
 			this.blocks = new HashMap<Integer, Block>();
 	}
 
-	public boolean blockWaiting() {
+	public synchronized boolean blockWaiting() {
 		for(int i = 0; i < this.blockOffsets.length; i++){
 			if(this.blocks.containsKey(blockOffsets[i]))
 				continue;
@@ -158,7 +158,7 @@ public class Piece {
 		return false;
 	}
 
-	public int getNextBlockOffset() {
+	public synchronized int getNextBlockOffset() {
 		for(int i = 0; i < this.blockOffsets.length; i++){
 			if(this.blocks.containsKey(blockOffsets[i]))
 				continue;

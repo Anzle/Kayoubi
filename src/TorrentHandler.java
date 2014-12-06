@@ -90,6 +90,45 @@ public class TorrentHandler {
 		//System.out.println("Oops");
 	}
 	
+	public void requestNewBlock_optimized(Peer peer){
+		if(this.done)
+			return;
+		
+		boolean[] peerlist = peer.getBitfield();
+		int[] priorityBV = new int[peerlist.length];
+		ArrayList<Peer> peers = this.peerManager.getPeers();
+		
+		for(Peer p : peers){
+			boolean[] pl = p.getBitfield();
+			for(int i = 0; i < priorityBV.length; i++){
+				if(pl[i])
+					priorityBV[i]++;
+			}
+		}
+		for(int min = 1; min <= peers.size(); min++){
+			//System.out.println("priority: " + min);
+			for(int i = 0; i < this.recieved.length; i++){
+				if(priorityBV[i] > min)
+					continue;
+				if(!this.recieved[i] && peerlist[i]){
+					Piece p = this.pieces.get(i);
+					if(p == null || p.complete() || p.blockWaiting())
+						continue;
+					int offset = p.getNextBlockOffset();
+					if(offset < 0)
+						continue;
+					int length = p.getBlockLength(offset);
+					if(length <= 0)
+						continue;
+					//System.out.println("Requesting " + i + "-" + offset + "-" + length);
+					peer.sendMessage(Message.blockRequestBuilder(i, offset, length));
+					return;
+				}
+			}
+		}
+		//System.out.println("Oops");
+	}
+	
 	public byte[] getBlockData(int index, int offset, int length){
 		Piece p = this.pieces.get(index);
 		if(p == null)
