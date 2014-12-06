@@ -336,6 +336,7 @@ public class Peer extends Thread {
 			interpertMessage();
 		
 	}
+	
 
 	private void interpertMessage() {
 		try {

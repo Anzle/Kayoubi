@@ -19,10 +19,12 @@ public class PeerManager {
 	int port;
 	Peer aPeer;
 	ArrayList<Peer> peerList;
+	ArrayList<Peer> ChokedPeerList;
 	Tracker tracker;
 	Thread serverCheck;
 	Thread peerCheck;
 	Thread peerPulse;
+	Thread chokeCheck; //this thread is going to check every 30 seconds which peers are chocked and then those peers will be added to the ArrayList ChokedPeerList
 	boolean downloading;
 	/**The wait interval: set to 2 minutes*/
 	final int INTERVAL = 10000;//120000;
