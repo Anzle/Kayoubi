@@ -65,8 +65,9 @@ public class TorrentHandler {
 	 * request new block for a given peer
 	 * 
 	 * @param p peer to request from
+	 * @deprecated
 	 */
-	public void requestNewBlock(Peer peer){
+	public void requestNewBlockSequential(Peer peer){
 		if(this.done)
 			return;
 		boolean[] peerlist = peer.getBitfield();
@@ -89,8 +90,13 @@ public class TorrentHandler {
 		}
 		//System.out.println("Oops");
 	}
-	
-	public void requestNewBlock_optimized(Peer peer){
+
+	/**
+	 * request new block for a given peer. this function is optimized to request the piece which the least peers have
+	 * 
+	 * @param p peer to request from
+	 */
+	public void requestNewBlock(Peer peer){
 		if(this.done)
 			return;
 		

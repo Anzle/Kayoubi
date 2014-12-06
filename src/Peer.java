@@ -412,7 +412,7 @@ public class Peer extends Thread {
 						System.out.println("piece " + bindex + "-" + boffset);
 						Block b = new Block(bindex, boffset, data);
 						this.torrentHandler.saveBlock(b, this);
-						this.torrentHandler.requestNewBlock_optimized(this);
+						this.torrentHandler.requestNewBlock(this);
 						break;
 					case (byte) 8: // cancel
 						System.out.println("cancel");
