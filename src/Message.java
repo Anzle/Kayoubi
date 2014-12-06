@@ -145,4 +145,24 @@ public class Message {
 		
 		return msg.array();
 	}
+	
+	public static byte[] choke(){
+		
+		ByteBuffer msg = ByteBuffer.allocate(5);
+		
+		msg.putInt(1);
+		msg.put((byte) 0);
+
+		return msg.array();
+	}
+	
+	public static byte[] unchoke(){
+		
+		ByteBuffer msg = ByteBuffer.allocate(5);
+		
+		msg.putInt(1);
+		msg.put((byte) 1);
+
+		return msg.array();
+	}
 }

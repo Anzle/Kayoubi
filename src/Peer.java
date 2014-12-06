@@ -27,6 +27,11 @@ public class Peer extends Thread {
 	private long lastMessageSent;
 	private Thread keepAlive;
 	
+	private long uploadUnchokeTime;
+	private long downloadUnchokeTime;
+	private int bytesDownloadedInTime = 0;
+	private int bytesUploadedInTime = 0;
+	
 	/**Connect outwards to a Peer
 	 * This is used when looking to a Peer to download from them
 	 * */
@@ -94,108 +99,6 @@ public class Peer extends Thread {
 		System.out.println(this.torrentHandler.torrentInfo.piece_hashes.length);
 		byte[] m = Message.interested();
 		this.sendMessage(m);
-		//run();
-	/*	try {
-			while (this.socket.isConnected()) {
-				int len = this.from_peer.readInt();
-				//System.out.println("read init!");
-				//System.out.println(len);
-				if (len > 0) {
-					byte id = this.from_peer.readByte();
-					//System.out.println("messageid: " + ((int) (id)));
-					switch (id) {
-					case (byte) 0: // choke
-						this.peer_choking = true;
-						System.out.println("choked");
-						break;
-					case (byte) 1: // unchoke
-						this.peer_choking = false;
-						System.out.println("un choked");
-						this.torrentHandler.requestNewBlock(this);
-						break;
-					case (byte) 2: // interested
-						this.peer_interested = true;
-						System.out.println("interested");
-						break;
-					case (byte) 3: // not interested
-						this.peer_interested = false;
-						System.out.println("not interested");
-						break;
-					case (byte) 4: // have
-						int piece = this.from_peer.readInt();
-						System.out.println("have " + piece);
-						if (piece >= 0 && piece < bitfield.length)
-							bitfield[piece] = true;
-						break;
-					case (byte) 5: // bit field
-						byte[] payload = new byte[len - 1];
-						this.from_peer.readFully(payload);
-						boolean[] bitfield = new boolean[payload.length * 8];
-						int boolIndex = 0;
-						for (int byteIndex = 0; byteIndex < payload.length; ++byteIndex) {
-							for (int bitIndex = 7; bitIndex >= 0; --bitIndex) {
-								if (boolIndex >= payload.length * 8) {
-									// Bad to return within a loop, but it's the easiest way
-									continue;
-								}
-
-								bitfield[boolIndex++] = (payload[byteIndex] >> bitIndex & 0x01) == 1 ? true: false;
-							}
-						}
-						this.bitfield = bitfield;
-						//System.out.println("bitfield recieved");
-						//System.out.println("building request");
-						this.torrentHandler.requestNewBlock(this);
-						break;
-					case (byte) 6: // request
-						//System.out.println("request");
-						int rindex = this.from_peer.readInt();
-						int rbegin = this.from_peer.readInt();
-						int rlength = this.from_peer.readInt();
-						// Not required for phase 1, but we need to clear the
-						byte[] rdata = this.torrentHandler.getBlockData(rindex, rbegin, rlength);
-						this.sendMessage(Message.pieceBuilder(rindex,rbegin,rdata));
-						break;
-					case (byte) 7: // piece
-						int payloadLen = len - 9;
-						//System.out.println("loading ("+payloadLen+")...");
-						int bindex = this.from_peer.readInt();
-						int boffset = this.from_peer.readInt();
-						byte[] data = new byte[payloadLen];
-						for(int i = 0; i < payloadLen; i++){
-							//System.out.println(i);
-							data[i] = this.from_peer.readByte();
-						}
-						System.out.println("piece " + bindex + "-" + boffset);
-						Block b = new Block(bindex, boffset, data);
-						this.torrentHandler.saveBlock(b, this);
-						this.torrentHandler.requestNewBlock(this);
-						break;
-					case (byte) 8: // cancel
-						System.out.println("cancel");
-						int cindex = this.from_peer.readInt();
-						int cbegin = this.from_peer.readInt();
-						int clength = this.from_peer.readInt();
-						// Not required for phase 1, but we need to clear the
-						// buffer
-						break;
-					default:
-						System.out.println("message invalid");
-						break;
-					}
-				}else{
-					if(len == 0)
-						System.out.println("keep alive");
-					else
-						System.out.println("message length: " + len);
-				}
-			}
-			
-			//socket.close();
-		} catch (IOException e) {
-			System.err.println("Peer " + this.ip + ":" + this.port + " disconnected. " + e.getMessage());
-			
-		}*/
 	}
 
 	/**
@@ -350,24 +253,26 @@ public class Peer extends Thread {
 					switch (id) {
 					case (byte) 0: // choke
 						this.peer_choking = true;
-						System.out.println("choked");
+						System.out.println(this.ip + " >> choked");
 						break;
 					case (byte) 1: // unchoke
 						this.peer_choking = false;
-						System.out.println("un choked");
+						System.out.println(this.ip + " >> un choked");
 						this.torrentHandler.requestNewBlock(this);
+						this.downloadUnchokeTime = System.currentTimeMillis();
+						this.bytesDownloadedInTime = 0;
 						break;
 					case (byte) 2: // interested
 						this.peer_interested = true;
-						System.out.println("interested");
+						System.out.println(this.ip + " >> interested");
 						break;
 					case (byte) 3: // not interested
 						this.peer_interested = false;
-						System.out.println("not interested");
+						System.out.println(this.ip + " >> not interested");
 						break;
 					case (byte) 4: // have
 						int piece = this.from_peer.readInt();
-						System.out.println("have " + piece);
+						//System.out.println(this.ip + " >> have " + piece);
 						if (piece >= 0 && piece < bitfield.length)
 							bitfield[piece] = true;
 						break;
@@ -397,8 +302,13 @@ public class Peer extends Thread {
 						int rbegin = this.from_peer.readInt();
 						int rlength = this.from_peer.readInt();
 						// Not required for phase 1, but we need to clear the
+						System.out.println(this.ip + " >> piece requested " + rindex + "-" + rbegin);
 						byte[] rdata = this.torrentHandler.getBlockData(rindex, rbegin, rlength);
-						this.sendMessage(Message.pieceBuilder(rindex,rbegin,rdata));
+						if(rdata != null){
+							this.sendMessage(Message.pieceBuilder(rindex,rbegin,rdata));
+							this.bytesUploadedInTime = rdata.length;
+							System.out.println(this.ip + " >> bytes uploaded " + this.bytesUploadedInTime + " | bps = " + this.getUploadSpeed());
+						}
 						break;
 					case (byte) 7: // piece
 						int payloadLen = len - 9;
@@ -410,8 +320,10 @@ public class Peer extends Thread {
 							//System.out.println(i);
 							data[i] = this.from_peer.readByte();
 						}
-						System.out.println("piece " + bindex + "-" + boffset);
 						Block b = new Block(bindex, boffset, data);
+						this.bytesDownloadedInTime += data.length;
+						System.out.println(this.ip + " >> piece recieved " + bindex + "-" + boffset);
+						System.out.println(this.ip + " >> bytes dowloaded " + this.bytesDownloadedInTime + " | bps = " + this.getDownloadSpeed());
 						this.torrentHandler.saveBlock(b, this);
 						this.torrentHandler.requestNewBlock(this);
 						break;
@@ -493,6 +405,60 @@ public class Peer extends Thread {
 	public boolean hasPulse() {
 		// TODO Auto-generated method stub
 		return pulse;
+	}
+	
+	/**
+	 * choke peer.
+	 */
+	public void choke(){
+		this.am_choking = true;
+		this.sendMessage(Message.choke());
+	}
+	
+	/**
+	 * unchoke peer and reset download speed counters
+	 */
+	public void unchoke(){
+		this.am_choking = false;
+		this.sendMessage(Message.unchoke());
+		this.uploadUnchokeTime = System.currentTimeMillis();
+		this.bytesUploadedInTime = 0;
+	}
+	
+	/**
+	 * test if peer is chocked
+	 * @return true if peer is chocked false if peer is unchocked
+	 */
+	public boolean amChoking(){
+		return this.am_choking;
+	}
+
+	
+	/**
+	 * test if peer is chocked
+	 * @return true if peer is choking
+	 * 			false if peer is not choking
+	 */
+	public boolean peerChoking(){
+		return this.peer_choking;
+	}
+	
+	/**
+	 * get average bytes per second downloaded for peer
+	 * @return double bytes per second downloaded since last unchoke
+	 */
+	public double getDownloadSpeed(){
+		long uptime = System.currentTimeMillis() - this.downloadUnchokeTime;
+		return (double)(int)(((double) this.bytesDownloadedInTime / (((Long) uptime).doubleValue() / 1000.0)) * 1000) / 1000.0;
+	}
+
+	/**
+	 * get average bytes per second uploaded to peer
+	 * @return double bytes per second uploaded since last unchoke
+	 */
+	public double getUploadSpeed(){
+		long uptime = System.currentTimeMillis() - this.uploadUnchokeTime;
+		return (double)(int)(((double) this.bytesUploadedInTime / (((Long) uptime).doubleValue() / 1000.0)) * 1000) / 1000.0;
 	}
 
 }
