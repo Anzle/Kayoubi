@@ -343,6 +343,23 @@ public class PeerManager {
 	        public void run(){
 	        	while(true){
 	        		System.out.println("in thread for checking peers for choked and unchoked");
+	        		
+	        		System.out.println("peer list is currently at: "+peerList.size());
+	        		if(ChokedPeerList != null){
+	        			System.out.println("ChokedPeer list is currently at: "+ChokedPeerList.size());
+	        		}
+	        		
+	        		int running=0; //this keeps track of the number of running peers which cannot exceed 6
+	        		Peer now;
+	        		
+	        		if(running>6){ //makes sure that only 6 peers are unchoked at one time
+	        			(peerList.get(0)).choke();
+	        			now=peerList.get(0);
+	        			ChokedPeerList.add(now);
+	        		}
+	        		
+	        		
+	        		
 					try {
 						Thread.sleep(wait30);
 					} catch (InterruptedException e) {
