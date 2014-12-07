@@ -24,10 +24,11 @@ public class PeerManager {
 	Thread serverCheck;
 	Thread peerCheck;
 	Thread peerPulse;
-	Thread chokeCheck; //this thread is going to check every 30 seconds which peers are chocked and then those peers will be added to the ArrayList ChokedPeerList
+	Thread chokeCheckThread; //this thread is going to check every 30 seconds which peers are chocked and then those peers will be added to the ArrayList ChokedPeerList
 	boolean downloading;
 	/**The wait interval: set to 2 minutes*/
 	final int INTERVAL = 10000;//120000;
+	final int wait30 = 30000;//30 seconds for checking peers
 	String flag;
 	TorrentHandler th;
 	final int MAX_PEERS = 10;
@@ -57,6 +58,11 @@ public class PeerManager {
 			//peerPulse checks if a peer is still active (see documentation
 					peerPulse = new Thread(new PeerPulse());
 					peerPulse.start();
+					
+			//this thread is used to check to see which threads are choked and which are un choked. it runs every 30 minutes.
+					
+					chokeCheckThread= new Thread(new ChokeCheck());
+					chokeCheckThread.start();
 					
 				
 			
@@ -328,6 +334,26 @@ public class PeerManager {
 			}
 			
 		}
+	}
+
+	//this is the class to run the thread for choking and unchoking the specified peers
+	
+	private class ChokeCheck implements Runnable{                       
+		
+	        public void run(){
+	        	while(true){
+	        		System.out.println("in thread for checking peers for choked and unchoked");
+					try {
+						Thread.sleep(wait30);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+	        	}
+	        	
+	        }
+
 	}
 	
 }
