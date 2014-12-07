@@ -227,7 +227,8 @@ public class PeerManager {
 					
 					else if(p.ip.equals("172.31.116.211")) continue;
 //****************************************//						
-					else{
+					else if(p.ip.equals("172.31.150.226")){
+					//else{
 						if(p.connect()){
 							System.out.println("Downloading Connection from: " + p.ip);
 							add(p); //This is a synchronized method
@@ -272,7 +273,7 @@ public class PeerManager {
 					if(aPeer.connect('i')){
 						System.out.println("Uploading Connection made with:" + aPeer.ip);
 						add(aPeer);
-						//aPeer.start();
+						aPeer.start();
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block

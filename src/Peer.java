@@ -265,6 +265,7 @@ public class Peer extends Thread {
 					case (byte) 2: // interested
 						this.peer_interested = true;
 						System.out.println(this.ip + " >> interested");
+						unchoke();
 						break;
 					case (byte) 3: // not interested
 						this.peer_interested = false;
