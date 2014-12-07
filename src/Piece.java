@@ -44,6 +44,12 @@ public class Piece {
 		return this.index;
 	}
 	
+	/** Return the number of blocks a piece has**/
+	public int getNumBlocks(){
+		return blocks.size();
+	}
+	
+	
 	public synchronized byte[] getData(){
 		byte[] data = new byte[length];
 		for(Integer offset : this.blocks.keySet()){

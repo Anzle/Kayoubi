@@ -30,6 +30,7 @@ public class PeerManager {
 	final int INTERVAL = 10000;//120000;
 	String flag;
 	TorrentHandler th;
+	final int MAX_PEERS = 10;
 	
 	
 	public PeerManager(int portNumber, Tracker tracker, String flag){
@@ -37,7 +38,7 @@ public class PeerManager {
 		this.tracker = tracker;
 		this.flag = flag;
 		downloading = false;
-		peerList = new ArrayList<Peer>(3);
+		peerList = new ArrayList<Peer>(MAX_PEERS);
 		th = this.tracker.getTorrentHandler();
 		th.setPeerManager(this);
 		
@@ -222,11 +223,15 @@ public class PeerManager {
 
 					//for Phase 2, we only connect to these peers
 					//else if(p.ip.equals("128.6.171.130") || p.ip.equals("128.6.171.131")){
+//made for blacklisting IPs
+					
+					else if(p.ip.equals("172.31.116.211")) continue;
+//****************************************//						
 					else{
 						if(p.connect()){
 							System.out.println("Downloading Connection from: " + p.ip);
 							add(p); //This is a synchronized method
-							p.download();
+							//p.download();
 						}
 						//else
 							//System.out.println("Could not connect to: "+p.ip);

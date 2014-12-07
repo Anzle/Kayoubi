@@ -1,7 +1,12 @@
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,14 +19,17 @@ public class TorrentHandler {
 	private HashMap<Integer,Piece> pieces;		//list of file pieces
 	private boolean[] recieved;					//stored if piece was received
 	private int completedPieceCount = 0;
-	private String outputFile;
+	private String file; //Renamed since it hopefully will load files
 	private boolean done = false;
 	private PeerManager peerManager;
 	private int uploadedTotal;
+	
+	
+/* Have this check if the output file already exists, maybe via another method*/
 	public TorrentHandler(TorrentInfo torrentInfo, String outputFile){
 		
 		this.torrentInfo = torrentInfo;
-		this.outputFile = outputFile;
+		this.file = outputFile;
 		this.pieces = new HashMap<Integer, Piece>();
 		this.recieved = new boolean[this.torrentInfo.piece_hashes.length];
 		
@@ -37,9 +45,17 @@ public class TorrentHandler {
 			this.pieces.put(i, p);
 		}
 		
+		//Check if the file exists, if it does, load the info
+		Path path = Paths.get(file);
+		if(Files.exists(path)){
+			System.out.println("Loading file");
+			loadFile();
+		}
+		
 	}
 	
-	/**
+/*Change to save every piece on contact*/
+	/** 
 	 * called by peer. the torrent tracker uses this to save the data of the file
 	 * 
 	 * @param b new block received
@@ -145,6 +161,7 @@ public class TorrentHandler {
 		return data;
 	}
 	
+/*change to not print out stuff*/
 	private void saveFile() {
 		byte[] data = new byte[this.torrentInfo.file_length];
 		System.out.println("building file...");
@@ -163,7 +180,7 @@ public class TorrentHandler {
 		BufferedOutputStream bos;
 		try {
 			System.out.println("saving file...");
-			bos = new BufferedOutputStream(new FileOutputStream(outputFile));
+			bos = new BufferedOutputStream(new FileOutputStream(file));
 			bos.write(data);
 			bos.flush();
 			bos.close();
@@ -175,6 +192,58 @@ public class TorrentHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	/* This method reads the file and loads
+	 *  the downloaded pieces into the Piece Hash
+	 * The method goes piece by piece and checks 
+	 * its length. It then reads that many bytes
+	 * into a byte array before dividing them into
+	 * blocks. Each block is then checked against the
+	 * hash and thrown out if it is bad
+	 * */
+	private void loadFile(){
+		BufferedInputStream bis;
+		
+		try {
+			bis = new BufferedInputStream(new FileInputStream(file));
+			byte[] data;
+			
+			for(int i : this.pieces.keySet()){
+				Piece p = pieces.get(i);
+				int offset = 0 - Piece.MAX_BLOCK_LENGTH;
+				data = new byte[p.getLength()];
+				bis.read(data);
+				
+				for(int j = 0; j < p.getNumBlocks(); j++){
+					byte[] blockData = new byte[p.getBlockLength(j)];
+					offset += Piece.MAX_BLOCK_LENGTH; //on first iteration it should become 0
+					
+					for(int k = 0; k<blockData.length;k++)
+						blockData[k] = data[offset+k];
+						
+					Block b = new Block(p.getIndex(), offset, blockData);
+					p.saveBlock(b);
+				}
+				
+				if(p.complete()){
+					this.recieved[p.getIndex()] = true;
+					completedPieceCount++;
+				}
+			}
+		
+		
+		
+		
+		} catch (FileNotFoundException e) {
+			System.err.println("This is akward. The file doesn't exist.");
+			//e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("The Load has failed with message: "+e.getMessage());
+			//e.printStackTrace();
+		}
+		
+		
 	}
 	
 	public int getBytesDownloaded(){

@@ -1,0 +1,11 @@
+.LOG
+
+3:45 AM 10/12/2014
+We need to get Phase 1 working before we move on to Phase 2.
+
+TODO:
+Reestablish connection to the HostServer
+Grab that Peer List
+Connect to a Peer
+Download that jonn
+Rejoice.

@@ -36,6 +36,11 @@ public class RUBTClient {
 		// stored correctly
 		input = new Scanner(System.in);
 		
+		if(args.length != 2 && args.length != 3){
+			System.err.println("Please enter command line arguments: <torrentfile>.torrent <saveFile>.<ext>");
+			System.exit(0);
+		}
+		
 		tfile = args[0];
 		sfile = args[1];
 		
@@ -99,13 +104,15 @@ public class RUBTClient {
 	
 	//This function begins the download
 	private void download() {
-		int count = 0;
+		peerManager.download();
+		/*int count = 0;
 			while(!peerManager.downloading && count < 50){
 				peerManager.download();
 				count++;
 			}
 		if(count>=50)
 			System.out.println("Coundn't start download");
+			*/
 	}
 	
 	//This function makes us Exit
@@ -128,11 +135,11 @@ public class RUBTClient {
 
 		public void run() {
 			while(true){
-				System.out.println("input q to quit, input d to display text");
+				System.out.println("input q to quit, input d to download");
 				String c = input.next();
 				c = c.toLowerCase();
 				switch(c){
-				//case "d": download();break;
+				case "d": download();break;
 				case "q": gracefulExit();break;
 				case "t": System.out.println("I like Scarves");break;
 				}
