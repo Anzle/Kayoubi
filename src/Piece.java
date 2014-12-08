@@ -46,7 +46,7 @@ public class Piece {
 	
 	/** Return the number of blocks a piece has**/
 	public int getNumBlocks(){
-		return blocks.size();
+		return blockOffsets.length;
 	}
 	
 	

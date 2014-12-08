@@ -54,8 +54,8 @@ public class TorrentHandler {
 		//Check if the file exists, if it does, load the info
 		Path path = Paths.get(file);
 		if(Files.exists(path)){
-			//System.out.println("Loading file");
-			//loadFile();
+			System.out.println("Loading file");
+			loadFile();
 		}
 		
 	}
@@ -220,15 +220,18 @@ public class TorrentHandler {
 				int offset = 0 - Piece.MAX_BLOCK_LENGTH;
 				data = new byte[p.getLength()];
 				bis.read(data);
+				//System.out.println("loading piece: " + p.getIndex());
 				
 				for(int j = 0; j < p.getNumBlocks(); j++){
-					byte[] blockData = new byte[p.getBlockLength(j)];
 					offset += Piece.MAX_BLOCK_LENGTH; //on first iteration it should become 0
+					byte[] blockData = new byte[p.getBlockLength(offset)];
+					
 					
 					for(int k = 0; k<blockData.length;k++)
 						blockData[k] = data[offset+k];
 						
 					Block b = new Block(p.getIndex(), offset, blockData);
+					//System.out.println(" -> block: " + offset);
 					p.saveBlock(b);
 				}
 				
@@ -236,8 +239,10 @@ public class TorrentHandler {
 					this.recieved[p.getIndex()] = true;
 					completedPieceCount++;
 				}
+				
+				
 			}
-		
+		//saveFile();
 		
 		
 		
