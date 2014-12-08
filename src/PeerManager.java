@@ -347,61 +347,55 @@ public class PeerManager {
 		
 	        public void run(){
 	        	while(true){
-	        		System.out.println("in thread for checking peers for choked and unchoked");
-	        		
-	        		System.out.println("peer list is currently at: "+peerList.size());
-	        		if(unchokedList != null){
-	        			System.out.println("unChokedPeer list is currently at: "+unchokedList.size());
-	        		}
-	        		
-	        		int running=0; //this keeps track of the number of running peers which cannot exceed 6
-	        		Peer now;
-	        		
-	        		for(int i=0;i<peerList.size();i++){
-	        			if(unchokedList.contains(peerList.get(i))==false && peerList.get(i).amChoking()==false){ //this condition is to check for unchoked peer which doesnt already exist in the unchokedlist
-	        				unchokedList.add(peerList.get(i));
-	        			}
-	        			
-	        			if(chokedList.contains(peerList.get(i))==false && peerList.get(i).amChoking()==true){ //this condition is to check for unchoked peer which doesnt already exist in the unchokedlist
-	        				chokedList.add(peerList.get(i));
-	        			}
-	        			
-	        		}
-	        		
-	        		Collections.sort(unchokedList, new Comparator<Peer>() { //this sorts the unchokedlist based on download speeds
-	        	        public int compare(Peer  p1, Peer p2)
-	        	        {
-	        	        	if(p1.getDownloadSpeed()==p2.getDownloadSpeed()){
-	        	        		return 0;
-	        	        	}else if(p1.getDownloadSpeed()>p2.getDownloadSpeed()){
-	        	        		return 1;
-	        	        	}else{
-	        	        		return -1;
-	        	        	}
-	        	        		
-	        	        }
-	        	    });
-	        		
-	        		//this picks the worst unchoked peer and then chokes it
-	        		
-	        		int tochoke=0;
-	        		tochoke=peerList.indexOf(unchokedList.get(0));
-	        		peerList.get(tochoke).choke();
-	        		unchokedList.remove(0);
-	        		
-	        		//this randomly picks a choked peer and unchokes it
-	        		int randomNum = 0 + (int)(Math.random()*chokedList.size()); 
-	        		int tounchoke=peerList.indexOf(chokedList.get(randomNum));
-	        		peerList.get(tounchoke).unchoke();
-	        		chokedList.remove(randomNum);
-	        		
-	        		//this makes sure that at any given time there are only 6 unchoked peers
-	        		while(unchokedList.size()>6){
+	        
+		        		if(peerList.size()>1){
+		        		
+		        		for(int i=0;i<peerList.size();i++){
+		        			if(unchokedList.contains(peerList.get(i))==false && peerList.get(i).amChoking()==false){ //this condition is to check for unchoked peer which doesnt already exist in the unchokedlist
+		        				unchokedList.add(peerList.get(i));
+		        			}
+		        			
+		        			if(chokedList.contains(peerList.get(i))==false && peerList.get(i).amChoking()==true){ //this condition is to check for unchoked peer which doesnt already exist in the unchokedlist
+		        				chokedList.add(peerList.get(i));
+		        			}
+		        			
+		        		}
+		        		
+		        		Collections.sort(unchokedList, new Comparator<Peer>() { //this sorts the unchokedlist based on download speeds
+		        	        public int compare(Peer  p1, Peer p2)
+		        	        {
+		        	        	if(p1.getDownloadSpeed()==p2.getDownloadSpeed()){
+		        	        		return 0;
+		        	        	}else if(p1.getDownloadSpeed()>p2.getDownloadSpeed()){
+		        	        		return 1;
+		        	        	}else{
+		        	        		return -1;
+		        	        	}
+		        	        		
+		        	        }
+		        	    });
+		        		
+		        		//this picks the worst unchoked peer and then chokes it
+		        		
+		        		int tochoke=0;
 		        		tochoke=peerList.indexOf(unchokedList.get(0));
 		        		peerList.get(tochoke).choke();
 		        		unchokedList.remove(0);
-	        		}
-	        		
+		        		
+		        		//this randomly picks a choked peer and unchokes it
+		        		int randomNum = 0 + (int)(Math.random()*chokedList.size()); 
+		        		int tounchoke=peerList.indexOf(chokedList.get(randomNum));
+		        		peerList.get(tounchoke).unchoke();
+		        		chokedList.remove(randomNum);
+		        		
+		        		//this makes sure that at any given time there are only 6 unchoked peers
+		        		while(unchokedList.size()>6){
+			        		tochoke=peerList.indexOf(unchokedList.get(0));
+			        		peerList.get(tochoke).choke();
+			        		unchokedList.remove(0);
+		        		}
+		        	
+		        	}
 	        		
 	        		
 					try {
