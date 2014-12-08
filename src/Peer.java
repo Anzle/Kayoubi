@@ -1,4 +1,8 @@
-
+/**
+ * Robert Williams
+ * Richard Gerdes
+ * Rahul Purwah
+ * **/
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -33,6 +37,7 @@ public class Peer extends Thread {
 	private long downloadUnchokeTime;
 	private int bytesDownloadedInTime = 0;
 	private int bytesUploadedInTime = 0;
+	private int errorCount;
 	
 	public String toString(){
 		return "{"+id+"}";
@@ -61,6 +66,7 @@ public class Peer extends Thread {
 		this.clientID = clientID;
 		this.bitfield = new boolean[this.torrentHandler.torrentInfo.piece_hashes.length];
 		pulse = false;
+		errorCount = 0;
 	}
 
 	/**
@@ -78,6 +84,7 @@ public class Peer extends Thread {
 		this.clientID = clientID;
 		bitfield = new boolean[this.torrentHandler.torrentInfo.piece_hashes.length];
 		pulse = false;
+		errorCount=0;
 	}
 
 	public boolean connect() {
@@ -149,9 +156,14 @@ public class Peer extends Thread {
 			to_peer.write(message);
 			lastMessageSent = System.nanoTime();
 			to_peer.flush();
+			if(errorCount > 0)
+				errorCount--;
 		} catch (IOException e) {
 			System.err.println("Error sending message: " + message.toString() +
 					"/nto peer located at: " + ip);
+			errorCount++;
+			if(errorCount > 3)
+				pulse = false;
 			return false;
 		}
 		return true;

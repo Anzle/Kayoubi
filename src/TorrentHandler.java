@@ -1,3 +1,9 @@
+/**
+ * Richard Gerdes
+ * Robert Williams
+ * Rahul Purwah
+ * **/
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
@@ -48,8 +54,8 @@ public class TorrentHandler {
 		//Check if the file exists, if it does, load the info
 		Path path = Paths.get(file);
 		if(Files.exists(path)){
-			System.out.println("Loading file");
-			loadFile();
+			//System.out.println("Loading file");
+			//loadFile();
 		}
 		
 	}
@@ -122,7 +128,7 @@ public class TorrentHandler {
 		
 		for(Peer p : peers){
 			boolean[] pl = p.getBitfield();
-			for(int i = 0; i < priorityBV.length; i++){
+			for(int i = 0; i < priorityBV.length && i < pl.length; i++){
 				if(pl[i])
 					priorityBV[i]++;
 			}

@@ -1,4 +1,8 @@
-
+/**
+ * Robert Williams
+  * Rahul Purwah
+  * Richard Gerdes
+ * **/
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -248,7 +252,7 @@ public class PeerManager {
 					//else if(p.ip.equals("128.6.171.130") || p.ip.equals("128.6.171.131")){
 //made for blacklisting IPs
 					
-					else if(p.ip.equals("172.31.116.211")) continue;
+					//else if(p.ip.equals("172.31.116.211")) continue;
 //****************************************//						
 					
 					else{
