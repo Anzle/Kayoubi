@@ -1,3 +1,5 @@
+
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,6 +33,21 @@ public class Peer extends Thread {
 	private long downloadUnchokeTime;
 	private int bytesDownloadedInTime = 0;
 	private int bytesUploadedInTime = 0;
+	
+	public String toString(){
+		return "{"+id+"}";
+	}
+	
+	public int compareTo(Peer o){
+		String oid=o.id.toString();
+		String nowid=this.id.toString();
+		
+		return nowid.compareTo(oid);
+		
+	}
+	
+
+
 	
 	/**Connect outwards to a Peer
 	 * This is used when looking to a Peer to download from them
@@ -363,7 +380,7 @@ public class Peer extends Thread {
 	 * @param Object o instance of Peer
 	 * @return if this object is the same peer or not
 	 */
-	public boolean equals(Object o){
+	@Override public boolean equals(Object o){
 		if(o instanceof Peer){
 			return ip.equals(((Peer) o).ip)?true:false; //Love the Trinary Operations
 		}
