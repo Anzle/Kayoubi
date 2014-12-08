@@ -175,6 +175,18 @@ public class PeerManager {
 	}
 	
 	/**
+	 * Check the pulse of all peers
+	 */
+	private synchronized void pulse(){
+		for(int i = 0; i < peerList.size();i++){
+			Peer p = peerList.get(i);
+			if(!checkPulse(p)){//if it has no pulse, it's dead
+				disconnect(p);
+			}
+		}
+	}
+	
+	/**
 	 * remove a peer from our Peer List
 	 * @param p
 	 */
@@ -238,8 +250,8 @@ public class PeerManager {
 					
 					else if(p.ip.equals("172.31.116.211")) continue;
 //****************************************//						
-					else if(p.ip.equals("172.31.150.226")){
-					//else{
+					
+					else{
 						if(p.connect()){
 							System.out.println("Downloading Connection from: " + p.ip);
 							add(p); //This is a synchronized method
@@ -284,7 +296,7 @@ public class PeerManager {
 					if(aPeer.connect('i')){
 						System.out.println("Uploading Connection made with:" + aPeer.ip);
 						add(aPeer);
-						aPeer.start();
+						//aPeer.start();
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -322,13 +334,8 @@ public class PeerManager {
 	class PeerPulse implements Runnable{
 		public void run(){
 			while(true){
-				for(Peer p: peerList){
-					if(!checkPulse(p)){//if it has no pulse, it's dead
-						disconnect(p);
-					}
-						
-				}
-				
+				pulse();		
+								
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {

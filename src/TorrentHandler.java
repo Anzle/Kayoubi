@@ -270,5 +270,10 @@ public class TorrentHandler {
 	public void setPeerManager(PeerManager peerManager) {
 		this.peerManager = peerManager;
 	}
+	
+	/** Return the array containing a listing of all gotten pieces**/
+	public boolean[] getRecieved(){
+		return recieved;
+	}
 
 }

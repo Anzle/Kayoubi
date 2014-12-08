@@ -283,6 +283,7 @@ public class Peer extends Thread {
 						this.peer_interested = true;
 						System.out.println(this.ip + " >> interested");
 						unchoke();
+						have();
 						break;
 					case (byte) 3: // not interested
 						this.peer_interested = false;
@@ -385,6 +386,22 @@ public class Peer extends Thread {
 			return ip.equals(((Peer) o).ip)?true:false; //Love the Trinary Operations
 		}
 		return false;
+	}
+	
+	/** 
+	 * Sends a bunch of have messages to the peer
+	 * **/
+	public void have(){
+		System.out.println(ip + " >> Sending have");
+		boolean[] piecesRecieved = torrentHandler.getRecieved();
+		int length = piecesRecieved.length;
+		
+		for(int i = 0; i < length;i++){
+			if(piecesRecieved[i]){
+				sendMessage(Message.haveBuilder(i));
+				System.out.println(Message.haveBuilder(i));
+			}
+		}
 	}
 	
 	/**
